@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name": "Ouyuni",
+    "type": "cat",
+    "age": 1,
+    "gender": "male",
+    "weight": 4.3,
+    "isVaccinated": true
+  },
+  {
+    "id": 2,
+    "name": "Rex",
+    "type": "",
+    "age": 4,
+    "gender": "",
+    "weight": 11.1,
+    "isVaccinated": true
+  },
+  {
+    "id": 3,
+    "name": "Tanjiro",
+    "type": "bird",
+    "age": 2,
+    "gender": "female",
+    "weight": 1.3,
+    "isVaccinated": false
+  }
+]

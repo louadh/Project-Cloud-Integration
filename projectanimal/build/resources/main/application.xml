@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-file="http://www.springframework.org/schema/integration/file"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/integration
+           http://www.springframework.org/schema/integration/spring-integration-5.1.xsd
+           http://www.springframework.org/schema/integration/file
+           http://www.springframework.org/schema/integration/file/spring-integration-file-5.1.xsd">
+
+    <bean id="displayAnimals" class="com.projectintegration.projectanimal.displayAnimals"/>
+
+    <int:channel id="channelInput"/>
+    <int:channel id="splitterChannel"/>
+    <int:channel id="transformerChannel"/>
+    <int:channel id="routedChannel"/>
+    <int:channel id="maleChannel"/>
+    <int:channel id="femaleChannel"/>
+    <int:channel id="noGenderChannel"/>
+    <int:channel id="maleSelectedChannel"/>
+    <int:channel id="femaleSelectedChannel"/>
+    <int:channel id="noGenderSelectedChannel"/>
+    <int:channel id="maleVaccinateChannel"/>
+    <int:channel id="femaleVaccinateChannel"/>
+    <int:channel id="noGenderVaccinateChannel"/>
+    <int:channel id="rejectedChannel"/>
+
+    <int-file:inbound-channel-adapter channel="channelInput" directory="dataIn" filename-pattern="animals.json">
+        <int:poller id="poller" fixed-delay="1000" />
+    </int-file:inbound-channel-adapter>
+
+    <int:json-to-object-transformer input-channel="channelInput" output-channel="splitterChannel"
+                                    type="com.projectintegration.projectanimal.Animals">
+    </int:json-to-object-transformer>
+
+    <int:splitter input-channel="splitterChannel" output-channel="routedChannel">
+    </int:splitter>
+
+    <int:router input-channel="routedChannel" expression="payload.gender">
+        <int:mapping value="male" channel="maleChannel"/>
+        <int:mapping value="female" channel="femaleChannel"/>
+        <int:mapping value="" channel="noGenderChannel"/>
+    </int:router>
+
+    <int:service-activator input-channel="maleChannel"
+                           output-channel="maleSelectedChannel"
+                           method="selectAnimal">
+        <bean id="1" class="com.projectintegration.projectanimal.SelectAnimal"/>
+    </int:service-activator>
+    <int:service-activator input-channel="femaleChannel"
+                           output-channel="femaleSelectedChannel"
+                           method="selectAnimal">
+        <bean id="2" class="com.projectintegration.projectanimal.SelectAnimal"/>
+    </int:service-activator>
+    <int:service-activator input-channel="noGenderChannel"
+                           output-channel="noGenderSelectedChannel"
+                           method="selectAnimal">
+        <bean id="3" class="com.projectintegration.projectanimal.SelectAnimal"/>
+    </int:service-activator>
+
+
+    <int:router input-channel="maleSelectedChannel" expression="payload.isVaccinated">
+        <int:mapping value="true" channel="maleVaccinateChannel"/>
+        <int:mapping value="false" channel="rejectedChannel"/>
+    </int:router>
+
+    <int:router input-channel="femaleSelectedChannel" expression="payload.isVaccinated">
+        <int:mapping value="true" channel="femaleVaccinateChannel"/>
+        <int:mapping value="false" channel="rejectedChannel"/>
+    </int:router>
+
+    <int:router input-channel="noGenderSelectedChannel" expression="payload.isVaccinated">
+        <int:mapping value="true" channel="noGenderVaccinateChannel"/>
+        <int:mapping value="false" channel="rejectedChannel"/>
+    </int:router>
+
+    <int:service-activator input-channel="maleVaccinateChannel" ref="displayAnimals" method="printAnimal"/>
+    <int:service-activator input-channel="femaleVaccinateChannel" ref="displayAnimals" method="printAnimal"/>
+    <int:service-activator input-channel="noGenderVaccinateChannel" ref="displayAnimals" method="printAnimal"/>
+    <int:service-activator input-channel="rejectedChannel" ref="displayAnimals" method="printAnimal"/>
+
+
+</beans>
